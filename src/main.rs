@@ -6,6 +6,8 @@ use sdl2::keyboard::Keycode;
 use std::time::Duration;
 
 pub fn main() {
+    let mut fullscreen = false;
+    let background_color = Color::RGB(128, 128, 128);
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
 
@@ -16,20 +18,31 @@ pub fn main() {
 
     let mut canvas = window.into_canvas().build().unwrap();
 
-    canvas.set_draw_color(Color::RGB(0, 255, 255));
+    canvas.set_draw_color(background_color);
     canvas.clear();
     canvas.present();
     let mut event_pump = sdl_context.event_pump().unwrap();
-    let mut i = 0;
     'running: loop {
-        i = (i + 1) % 255;
-        canvas.set_draw_color(Color::RGB(i, 64, 255 - i));
+        canvas.set_draw_color(background_color);
         canvas.clear();
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit {..} |
                 Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                     break 'running
+                },
+                Event::KeyDown { keycode: Some(Keycode::F), .. } => {
+                    if !fullscreen {
+                        match canvas.window_mut().set_fullscreen(sdl2::video::FullscreenType::Desktop) {
+                            Ok(_) => fullscreen = true,
+                            Err(_) => ()
+                        }
+                    } else {
+                        match canvas.window_mut().set_fullscreen(sdl2::video::FullscreenType::Off) {
+                            Ok(_) => fullscreen = false,
+                            Err(_) => ()
+                        }
+                    }
                 },
                 _ => {}
             }
